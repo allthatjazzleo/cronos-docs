@@ -19,6 +19,7 @@ jobs:
         with:
           username: ${{ github.actor }}
           team: 'docs-maintainers'
+          organization: crypto-org-chain
           GITHUB_TOKEN: ${{ secrets.ORG_READ_BOT_PAT }}
       - name: set valid if it is push event or it is triggered by team members
         id: setValid
