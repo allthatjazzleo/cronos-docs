@@ -49,7 +49,6 @@ jobs:
         id: pr_data
         if: github.event_name == 'issue_comment'
         run: |
-          echo "::set-output name=branch::${{ fromJson(steps.request.outputs.data).head.ref }}"
           echo "::set-output name=repo_name::${{ fromJson(steps.request.outputs.data).head.repo.full_name }}"
       - name: Checkout PR Branch
         uses: actions/checkout@v2
@@ -57,7 +56,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ steps.pr_data.outputs.repo_name }}
-          ref: ${{ steps.pr_data.outputs.branch }}
+          ref: ${{ github.event.issue.pull_request.commit_id }}
       - name: Check MASTER code
         uses: actions/checkout@v2
         if: github.event_name == 'push'
@@ -94,7 +93,6 @@ jobs:
         id: pr_data
         if: github.event_name == 'issue_comment'
         run: |
-          echo "::set-output name=branch::${{ fromJson(steps.request.outputs.data).head.ref }}"
           echo "::set-output name=repo_name::${{ fromJson(steps.request.outputs.data).head.repo.full_name }}"
       - name: Checkout PR Branch
         uses: actions/checkout@v2
@@ -102,7 +100,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ steps.pr_data.outputs.repo_name }}
-          ref: ${{ steps.pr_data.outputs.branch }}
+          ref: ${{ github.event.issue.pull_request.commit_id }}
       - name: Check MASTER code
         uses: actions/checkout@v2
         if: github.event_name == 'push'
