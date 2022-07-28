@@ -55,7 +55,7 @@ jobs:
           if [[ "${comment_hash}" == '/staging' ]]; then 
             echo "::set-output name=ref::${{ fromJson(steps.request.outputs.data).head.ref }}" # use default head ref
           else
-            echo "::set-output name=ref::${comment_hash:0:7}" # use comment provided ref
+            echo "::set-output name=ref::${comment_hash}" # use comment provided ref
           fi
       - name: Checkout PR Branch
         uses: actions/checkout@v2
@@ -70,7 +70,7 @@ jobs:
       - name: print commit hash
         if: github.event_name == 'issue_comment'
         run: |
-          commit_hash=$(git rev-parse --verify HEAD --short)
+          commit_hash=$(git rev-parse --verify HEAD)
           echo "$commit_hash"
           echo "${{ steps.pr_data.outputs.ref }}"
           if [[ "${{ steps.pr_data.outputs.ref }}" == "$commit_hash" ]]; then 
