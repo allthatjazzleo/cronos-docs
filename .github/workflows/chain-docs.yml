@@ -9,7 +9,7 @@ jobs:
   member:
     name: Check whether it is triggered by team members or pushed
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.comment.body == '/staging'
+    if: github.event_name == 'push' || startsWith(github.event.comment.body, '/staging')
     outputs:
       valid: ${{ steps.setValid.outputs.valid }}
     steps:
@@ -51,20 +51,34 @@ jobs:
         if: github.event_name == 'issue_comment'
         run: |
           echo "::set-output name=repo_name::${{ fromJson(steps.request.outputs.data).head.repo.full_name }}"
+          comment_hash=`echo ${{ github.event.comment.body }} | cut -d' ' -f2-` # get commit hash if any
+          if [[ "${comment_hash}" == '/runsim' ]]; then 
+            echo "::set-output name=ref::${{ fromJson(steps.request.outputs.data).head.ref }}" # use default head ref
+          else
+            echo "::set-output name=ref::${comment_hash}" # use comment provided ref
+          fi
       - name: Checkout PR Branch
         uses: actions/checkout@v2
         if: github.event_name == 'issue_comment'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ steps.pr_data.outputs.repo_name }}
-          ref: ${{ github.event.issue.pull_request.head.sha }}
+          ref: ${{ steps.pr_data.outputs.ref }}
       - name: Check MASTER code
         uses: actions/checkout@v2
         if: github.event_name == 'push'
       - name: print commit hash
+        if: github.event_name == 'issue_comment'
         run: |
-          git rev-parse --verify HEAD
-          echo ${{ github.event.issue.pull_request.head.sha }}
+          commit_hash=$(git rev-parse --verify HEAD --short)
+          echo "$commit_hash"
+          echo "${{ steps.pr_data.outputs.ref }}"
+          if [[ "${{ steps.pr_data.outputs.ref }}" == "$commit_hash" ]]; then 
+            echo "can check out and proceed"
+          else
+            echo "hash not the same"
+          fi
+
     #   uses: github/codeql-action/upload-sarif@v1
     #   with:
     #     sarif_file: reports
